@@ -4,8 +4,24 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>PlantUML Drag</title>
+        <link rel="stylesheet" href="styles.css" />
 	</head>
 	<body>
+        <h1>PlantUML Diagram Editor</h1>
 
+        <label for="code">Enter Diagram Markup:</label><br />
+        <textarea id="code" rows="10" placeholder="Type PlantUML code here...">
+            @startuml
+            Alice -> Bob: Hello
+            Bob --> Alice: Hi!
+            @enduml
+        </textarea>
+
+        <button id="renderBtn" type="button">Render Diagram</button>
+
+        <!-- Area to Display the svg-->
+        <div id="svgHost"></div>
+
+        <script src="app.js"></script>
 	</body>
 </html>
