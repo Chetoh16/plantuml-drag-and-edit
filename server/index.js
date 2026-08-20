@@ -29,28 +29,51 @@ app.post('/render', (req, res) => {
     // Extract PlantUML markup string sent from the client/browser
     const code = req.body.code;
     
-    // Create an absolute path to the diagram.puml
+    // Create absolute paths for the diagrams
     const diagramSourcePath = path.join(__dirname, 'temp_diagram.puml');
-
-    // Write the PlantUML string to disk at diagram.puml.
-    // PlantUML requires an actual file on disk to process. 
-    fs.writeFileSync(diagramSourcePath, code);
+    const diagramOutputPath = path.join(__dirname, 'temp_diagram.svg');
 
     // Construct absolute path to the jar file
     const jarPath = path.join(__dirname, 'plantuml.jar');
 
-    // Create a shell command running Java to process diagram.puml.
-    exec(`java -jar ${jarPath} -tsvg ${diagramSourcePath}`, (err) => {
+    // Write the PlantUML string to disk at diagram.puml.
+    // PlantUML requires an actual file on disk to process. 
+    fs.writeFile(diagramSourcePath, code, (writeErr) => {
 
-        if (err){
-            return res.status(500).send('PlantUML failed to render. How sad, try again.');
+        if (writeErr) {
+            console.error('File write error:', writeErr);
+            return res.status(500).send('Failed to create temporary input file.');
         }
-        
-        // Read generated SVG output file from disk
-        const svg = fs.readFileSync(path.join(__dirname, 'temp_diagram.svg'), 'utf8');
-        
-        // Send the SVG markup string back to the browser.
-        res.type('text/plain').send(svg);
+
+        // Create a shell command running Java to process diagram.puml.
+        exec(`java -jar ${jarPath} -tsvg ${diagramSourcePath}`, (err) => {
+
+            // Clean up the .puml file regardless of success or error
+            if (fs.existsSync(diagramSourcePath)) {
+                fs.unlinkSync(diagramSourcePath);
+            }
+
+            if (err){
+                return res.status(500).send('PlantUML failed to render. How sad, try again.');
+            }
+                        
+            // Read generated SVG output
+            fs.readFile(diagramOutputPath, 'utf8', (readErr, svgData) => {
+
+                // Clean up the generated .svg file after reading
+                if (fs.existsSync(diagramOutputPath)) {
+                    fs.unlinkSync(diagramOutputPath);
+                }
+
+                if (readErr) {
+                    console.error('File read error:', readErr);
+                    return res.status(500).send('Failed to read rendered SVG output.');
+                }
+
+                // Return raw SVG string back to the client
+                res.type('image/svg+xml').send(svgData);
+            });
+        });
     });
 });
 
