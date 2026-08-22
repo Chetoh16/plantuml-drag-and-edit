@@ -63,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+    // Extract edge elements linked via data attributes
+    // These are the lines between elements
     function buildEdges(svgRoot){
         
         const edges = {}
@@ -89,12 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            
+            // Extract data from the elements
             const origPoints = extractPathEndpoints(pathElement.getAttribute('d'));
             const textMessage = textEls.map(t => ({
                 origX: parseFloat(t.getAttribute('x')),
                 origY: parseFloat(t.getAttribute('y'))
             }));
+
+            // Add data to the edges dictionary
             edges.push({ linkFrom, linkTo, pathElement, polygonElement, textElement, textMessage, origPoints });
             
         });
