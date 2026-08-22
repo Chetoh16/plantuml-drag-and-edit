@@ -28,9 +28,27 @@ button:hover {
 }
 
 #svgHost {
-  margin-top: 20px;
-  background: white;
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: 750px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    overflow: auto; /* Allows panning/scrolling if diagram is very wide */
+    position: relative;
+}
+
+#svgHost svg {
+    display: block;
+    
+    /* this stretches the nodes*/
+    /* min-width: 100%;
+    min-height: 100%; */
+}
+
+.pu-node {
+  cursor: grab;
+}
+
+.pu-node:active {
+  cursor: grabbing;
 }
