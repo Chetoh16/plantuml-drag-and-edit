@@ -1,28 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>PlantUML Drag</title>
-        <link rel="stylesheet" href="styles.css" />
-	</head>
-	<body>
-        <h1>PlantUML Diagram Editor</h1>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlantUML Drag</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="app-container">
 
-        <label for="code">Enter Diagram Markup:</label><br />
-        <textarea id="code" rows="10" placeholder="Type PlantUML code here...">
-            @startuml
-            class Order
-            class Customer
-            Customer --> Order
-            @enduml
-        </textarea>
+        <!-- Left Sidebar Column -->
+        <div class="editor-column">
+            <div class="editor-header">
+                <h2>PlantUML Drag & Edit</h2>
+            </div>
+            
+            <textarea id="code" placeholder="Type PlantUML code here...">@startuml
+class Order
+class Customer
+Customer --> Order
+@enduml</textarea>
 
-        <button id="renderBtn" type="button">Render Diagram</button>
+            <div class="editor-footer">
+                <button id="renderBtn" type="button">Render Diagram</button>
+            </div>
+        </div>
 
-        <!-- Area to Display the svg-->
-        <div id="svgHost"></div>
+        <!-- Right Diagram Dragging Area-->
+        <div id="svgHost" class="diagram-column"></div>
+    </div>
 
-        <script src="app.js"></script>
-	</body>
+    <script src="app.js"></script>
+</body>
 </html>

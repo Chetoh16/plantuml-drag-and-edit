@@ -1,54 +1,107 @@
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  padding: 20px;
-  background-color: #f9f9f9;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-textarea {
+html, body {
+  height: 100%;
   width: 100%;
-  max-width: 600px;
-  font-family: monospace;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  overflow: hidden;
+  font-family: Tahoma, Cambria, "Times New Roman", Times, serif;
+  background-color: #f4f5f7;
 }
 
-button {
-  padding: 10px 20px;
-  background-color: #b40202;
+/* Parent container filling the entire screen */
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Left Sidebar - Editor Column */
+.editor-column {
+  width: 28%;
+  min-width: 280px;
+  max-width: 450px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-right: 1px solid #dcdcdc;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.editor-header {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  background-color: rgb(102, 4, 1);
+}
+
+.editor-header h2 {
+  font-size: 1.1rem;
+  color: #fffdfd;
+}
+
+/* Code Input */
+#code {
+  flex: 1;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1c2024;
+  background-color: #ffffff;
+}
+
+/* Footer holding the render button */
+.editor-footer {
+  padding: 16px;
+  border-top: 1px solid #eee;
+  background-color: #fafafa;
+}
+
+#renderBtn {
+  width: 100%;
+  padding: 12px;
+  background-color: rgb(102, 4, 1);
   color: white;
+  font-size: 14px;
+  font-weight: 600;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 10px;
+  transition: background-color 0.2s ease;
 }
 
-button:hover {
-  background-color: #d68100;
+#renderBtn:hover {
+  background-color: rgb(212, 11, 4);
 }
 
-#svgHost {
-    width: 100%;
-    height: 750px;
-    background-color: #ffffff;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    overflow: auto; /* Allows panning/scrolling if diagram is very wide */
-    position: relative;
+/* Right Column - Diagram Space */
+.diagram-column {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: auto;
+  background-color: #f8f9fa;
 }
 
-#svgHost svg {
-    display: block;
-    
-    /* this stretches the nodes*/
-    /* min-width: 100%;
-    min-height: 100%; */
+/* SVG Styling */
+.diagram-column svg {
+  display: block;
+  cursor: default;
 }
 
+/* Cursor indicator for draggable elements */
 .pu-node {
   cursor: grab;
 }
 
-.pu-node:active {
+.pu-node.dragging {
   cursor: grabbing;
 }
