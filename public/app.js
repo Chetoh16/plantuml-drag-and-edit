@@ -354,14 +354,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Transform screen click coordinates into SVG canvas space coordinates
-    function getSvgPoint(svgRoot, event) {
+    function getSvgPoint(svgRoot, ev) {
 
         // Create an empty SVG point object
         const point = svgRoot.createSVGPoint();
 
         // Set the point's coordinates to the click coordinates
-        point.x = event.clientX;
-        point.y = event.clientY;
+        point.x = ev.clientX;
+        point.y = ev.clientY;
 
         return point.matrixTransform(svgRoot.getScreenCTM().inverse());
     }
@@ -377,6 +377,71 @@ document.addEventListener('DOMContentLoaded', () => {
         node.curY = newY;
     }
 
+    // Handles dragging logic for entity nodes and packages/clusters
+    function attachDragHandlers(svgRoot, nodes, edges) {
+
+        // Iterate through all parsed node objects
+        Object.values(nodes).forEach(n => {
+            
+            // Track active dragging status flag for the current node instance
+            let dragging = false
+
+            // Track horizontal & vertical mouse distance offset relative to node origin
+            // Remembers where inside the box was clicked so the top-left corner doesn't teleport to the cursor tip
+            let offsetX = 0
+            let offsetY = 0;
+
+            // Attach mousedown listener on node group element to start dragging
+            n.groupEl.addEventListener('mousedown', (ev) => {
+                dragging = true;
+                n.groupEl.classList.add('dragging');
+
+                const point = getSvgPoint(svgRoot, ev);
+                offsetX = point.x - n.curX;
+                offsetY = point.y - n.curY;
+
+                // Prevent default browser drag-and-drop and text selection behaviors
+                ev.preventDefault();
+
+                // Stop event from bubbling up to parent SVG elements
+                ev.stopPropagation();
+            });
+
+            // Move node and all associated children on mouse move
+            window.addEventListener('mousemove', (ev) => {
+
+                if (!dragging) return;
+
+                const pt = getSvgPoint(svgRoot, ev);
+                const newX = pt.x - offsetX, newY = pt.y - offsetY;
+                const dx = newX - n.curX, dy = newY - n.curY;
+
+                // Reposition the main dragged node element to its new coordinates
+                moveNodeTo(n, newX, newY);
+
+                // If moving a package/cluster, move all containing child entities as well
+                if (n.type === 'cluster') {
+                    n.children.forEach(childId => {
+                        const child = nodes[childId];
+                        if (child) {
+                            moveNodeTo(child, child.curX + dx, child.curY + dy);
+                        }
+                        
+                    });
+                }
+                // Recalculate positions for all connected diagram arrows and edge elements
+                redrawAllEdges(nodes, edges);
+            });
+
+            // Stop dragging action
+            window.addEventListener('mouseup', () => {
+                if (dragging) {
+                    dragging = false;
+                    n.groupEl.classList.remove('dragging');
+                }
+            });
+        });
+    }
 
 
 });
