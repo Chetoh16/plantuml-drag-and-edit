@@ -67,6 +67,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+    // Parse all class and cluster elements, to get initial positions via SVG getBBox()
+    function buildNodes(svgRoot){
+
+        const nodes = {}
+
+        // The svg is made out g.entities, g.clusters, g.links , g.title etc.
+        // Example:
+        // <g xmlns="http://www.w3.org/2000/svg" class="cluster" data-qualified-name="Account" data-source-line="20" id="ent0002">
+        // <g xmlns="http://www.w3.org/2000/svg" class="entity" data-qualified-name="Account.User" data-source-line="22" id="ent0003">
+        svgRoot.querySelectorAll('g.entity, g.cluster').forEach(g => {
+
+            const id = g.getAttribute('id');
+            if (!id){
+                return
+            }
+            const isCluster = g.classList.contains('cluster');
+
+            // Full package and class name (e.g. "AuthPackage.User") used for grouping
+            // If there is no qualified name, default to id
+            const fullName = g.getAttribute('data-qualified-name') || id
+
+            // getBBox() works for any shape (rect for classes, path for package borders)
+            const box = g.getBBox();
+
+            // Sets the mouse cursor to "grab"
+            g.classList.add('pu-node')
+
+            nodes[id] = {
+
+                // I call it class rather than entity since I mainly work with Class Diagrams
+                id, fullName, type: isCluster? 'cluster' : 'class',
+
+                // Initial x-y coordinate when the diagram is first rendered
+                origX: box.x, origY: box.y, 
+                w: box.width, h: box.height,
+                // Current x-y coordinate
+                curX: box.x, curY: box.y,
+                // Reference to the SVG <g> DOM element representing this node (Group Element)
+                groupEl: g, 
+                // Array of child node IDs contained inside this package (used if nodeType is 'cluster')
+                children: []
+            };     
+        });
+        return nodes
+    }
+
+    // A class belongs to a package if its qualified name's prefix
+    // (everything before the LAST dot) matches a package's own qualified name.
+    // E.g.
+    // class="cluster" data-qualified-name="Account"
+    // class="entity" data-qualified-name="Account.User"
+    // Group nodes based on their container (cluster/class)
+    function groupNodes(nodes){
+        
+        // Separate nodes into clusters (containers) and entities/classes (items)
+        // I call it class rather than entity since I mainly work with Class Diagrams
+        const clusters = Object.values(nodes).filter(node => node.type === 'cluster')
+        const classes = Object.values(nodes).filter(node => node.type !== 'cluster')
+
+        classes.forEach(node => {
+            
+            // Find the last dot to get the parent prefix (e.g. "Account" from "Account.User")
+            const lastDot = node.fullName.lastIndexOf('.')
+
+            // Skip if it has no parent package
+            if(lastDot < 0){
+                return;
+            }
+
+            // Extract parent name and attach this node to its matching cluster
+            const parentFullName = node.fullName.slice(0, lastDot)
+            const parent = clusters.find(cluster => cluster.fullName === parentFullName)
+
+
+            // Builds a list of child IDs directly inside the cluster's data object
+            // Basically adds the children nodes inside the parent if they belong to the same cluster
+            if(parent){
+                parent.children.push(node.id)
+            }
+
+        });
+    }
+        
+
     // Extract edge elements linked via data attributes
     // These are the lines between elements
     function buildEdges(svgRoot, nodes){
@@ -229,9 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Return the percentage along the line and the exact point on the line
         return { 
-            progressOnLine, 
-            projectedX: lineStartX + progressOnLine * lineDeltaX, 
-            projectedY: lineStartY + progressOnLine * lineDeltaY 
+            t: progressOnLine, 
+            x: lineStartX + progressOnLine * lineDeltaX, 
+            y: lineStartY + progressOnLine * lineDeltaY 
         };
     }
 
@@ -241,89 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Parse all class and cluster elements, to get initial positions via SVG getBBox()
-    function buildNodes(svgRoot){
 
-        const nodes = {}
-
-        // The svg is made out g.entities, g.clusters, g.links , g.title etc.
-        // Example:
-        // <g xmlns="http://www.w3.org/2000/svg" class="cluster" data-qualified-name="Account" data-source-line="20" id="ent0002">
-        // <g xmlns="http://www.w3.org/2000/svg" class="entity" data-qualified-name="Account.User" data-source-line="22" id="ent0003">
-        svgRoot.querySelectorAll('g.entity, g.cluster').forEach(g => {
-
-            const id = g.getAttribute('id');
-            if (!id){
-                return
-            }
-            const isCluster = g.classList.contains('cluster');
-
-            // Full package and class name (e.g. "AuthPackage.User") used for grouping
-            // If there is no qualified name, default to id
-            const fullName = g.getAttribute('data-qualified-name') || id
-
-            // getBBox() works for any shape (rect for classes, path for package borders)
-            const box = g.getBBox();
-
-            // Sets the mouse cursor to "grab"
-            g.classList.add('pu-node')
-
-            nodes[id] = {
-
-                // I call it class rather than entity since I mainly work with Class Diagrams
-                id, fullName, type: isCluster? 'cluster' : 'class',
-
-                // Initial x-y coordinate when the diagram is first rendered
-                origX: box.x, origY: box.y, 
-                w: box.width, h: box.height,
-                // Current x-y coordinate
-                curX: box.x, curY: box.y,
-                // Reference to the SVG <g> DOM element representing this node (Group Element)
-                groupEl: g, 
-                // Array of child node IDs contained inside this package (used if nodeType is 'cluster')
-                children: []
-            };     
-        });
-        return nodes
-    }
-
-    // A class belongs to a package if its qualified name's prefix
-    // (everything before the LAST dot) matches a package's own qualified name.
-    // E.g.
-    // class="cluster" data-qualified-name="Account"
-    // class="entity" data-qualified-name="Account.User"
-    // Group nodes based on their container (cluster/class)
-    function groupNodes(nodes){
-        
-        // Separate nodes into clusters (containers) and entities/classes (items)
-        // I call it class rather than entity since I mainly work with Class Diagrams
-        const clusters = Object.values(nodes).filter(node => node.type === 'cluster')
-        const classes = Object.values(nodes).filter(node => node.type !== 'cluster')
-
-        classes.forEach(node => {
-            
-            // Find the last dot to get the parent prefix (e.g. "Account" from "Account.User")
-            const lastDot = node.fullName.lastIndexOf('.')
-
-            // Skip if it has no parent package
-            if(lastDot < 0){
-                return;
-            }
-
-            // Extract parent name and attach this node to its matching cluster
-            const parentFullName = node.fullName.slice(0, lastDot)
-            const parent = clusters.find(cluster => cluster.fullName === parentFullName)
-
-
-            // Builds a list of child IDs directly inside the cluster's data object
-            // Basically adds the children nodes inside the parent if they belong to the same cluster
-            if(parent){
-                parent.children.push(node.id)
-            }
-
-        });
-    }
-        
 
     // Dynamically adjust SVG viewport so dragging area (canvas) expands to fill the container (div)
     function expandSvgCanvas(svgRoot, containerEl) {
