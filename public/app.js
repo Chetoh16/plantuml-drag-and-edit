@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             e.textMessage.forEach((tm, i) => {
                 // Find relative scalar position 't' and projected point on original line
-                const proj = projectPointOntoSegment(tm.origX, tm.origY, e.origPoints.x1, e.origPoints.y1, e.origPoints.x2, e.origPoints.y2);
+                const proj = getLabelLineProjection(tm.origX, tm.origY, e.origPoints.x1, e.origPoints.y1, e.origPoints.x2, e.origPoints.y2);
                 
                 // Preserve original perpendicular distance from line to text center
                 const offsetX = tm.origX - proj.x, offsetY = tm.origY - proj.y;
@@ -198,9 +198,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Pick the smaller scale factor to find which edge is hit first
         const scale = Math.min(scaleX, scaleY);
-        
+
         // Return the exact intersection point coordinates on the box perimeter
         return { x: cx + dx * scale, y: cy + dy * scale };
+    }
+
+    // Finds the closest point on a line segment to a text label, and records its relative position
+    // Remembers where a label sits along an arrow (e.g. 50% way through) and its offset,
+    // so when nodes are dragged, the label moves smoothly with the updated line.
+    function getLabelLineProjection(labelX, labelY, lineStartX, lineStartY, lineEndX, lineEndY) {
+
+        // Measure the total horizontal and vertical distance of the line segment
+        const lineDeltaX = lineEndX - lineStartX;
+        const lineDeltaY = lineEndY - lineStartY;
+
+        // Calculate the squared length of the line segment
+        const lineLengthSquared = lineDeltaX * lineDeltaX + lineDeltaY * lineDeltaY;
+
+        // Calculate 'progressOnLine' (t): 0 = start of line, 0.5 = middle, 1 = end of line
+        let progressOnLine = lineLengthSquared === 0 
+            ? 0 
+            : ((labelX - lineStartX) * lineDeltaX + (labelY - lineStartY) * lineDeltaY) / lineLengthSquared;
+
+        // Lock progress between 0 and 1 so the projection never goes past the line's endpoints
+        progressOnLine = Math.max(0, Math.min(1, progressOnLine));
+
+        // Return the percentage along the line and the exact point on the line
+        return { 
+            progressOnLine, 
+            projectedX: lineStartX + progressOnLine * lineDeltaX, 
+            projectedY: lineStartY + progressOnLine * lineDeltaY 
+        };
     }
 
 
