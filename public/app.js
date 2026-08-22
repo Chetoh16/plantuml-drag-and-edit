@@ -369,12 +369,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Translates the group element to its new X/Y position
     function moveNodeTo(node, newX, newY) {
 
+        // Clamp coordinates so nodes cannot be moved past the top-left origin (0,0)
+        const clampedX = Math.max(0, newX);
+        const clampedY = Math.max(0, newY);
+
         // Apply CSS SVG transform translate attribute using distance moved from initial coordinates
-        node.groupEl.setAttribute('transform', `translate(${newX - node.origX},${newY - node.origY})`);
+        node.groupEl.setAttribute('transform', `translate(${clampedX - node.origX},${clampedY - node.origY})`);
 
         // Update the stored current positions
-        node.curX = newX;
-        node.curY = newY;
+        node.curX = clampedX;
+        node.curY = clampedY;
     }
 
     // Handles dragging logic for entity nodes and packages/clusters
@@ -412,12 +416,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!dragging) return;
 
-                const pt = getSvgPoint(svgRoot, ev);
-                const newX = pt.x - offsetX, newY = pt.y - offsetY;
-                const dx = newX - n.curX, dy = newY - n.curY;
+                const point = getSvgPoint(svgRoot, ev);
+
+                // Calculate potential position
+                const targetX = point.x - offsetX;
+                const targetY = point.y - offsetY;
+
+                // Calculate deltas based on actual clamped position changes
+                const oldX = n.curX;
+                const oldY = n.curY;
 
                 // Reposition the main dragged node element to its new coordinates
-                moveNodeTo(n, newX, newY);
+                moveNodeTo(n, targetX, targetY);
+
+                const dx = n.curX - oldX;
+                const dy = n.curY - oldY;
 
                 // If moving a package/cluster, move all containing child entities as well
                 if (n.type === 'cluster') {
