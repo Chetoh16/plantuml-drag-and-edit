@@ -172,8 +172,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function rectEdgeIntersection(box, towardX, towardY){
-        return
+    // Compute rectangle boundary intersection so arrows stop at node borders
+    function rectEdgeIntersection(box, towardX, towardY) {
+
+        // Find the center coordinates of the bounding box
+        const cx = box.curX + box.w / 2
+        const cy = box.curY + box.h / 2;
+
+        // Calculate the horizontal and vertical distances to the target point
+        const dx = towardX - cx
+        const dy = towardY - cy;
+
+        // If target is at the exact center, return center to avoid dividing by zero
+        if (dx === 0 && dy === 0){
+            return { x: cx, y: cy };
+        }
+
+        // Get half-width and half-height of the bounding box
+        const hw = box.w / 2
+        const  hh = box.h / 2;
+
+        // Calculate scaling factors to reach horizontal and vertical edges (Infinity if direction is 0)
+        const scaleX = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+        const scaleY = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+
+        // Pick the smaller scale factor to find which edge is hit first
+        const scale = Math.min(scaleX, scaleY);
+        
+        // Return the exact intersection point coordinates on the box perimeter
+        return { x: cx + dx * scale, y: cy + dy * scale };
     }
 
 
