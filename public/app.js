@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         redrawAllEdges(nodes, edges);
 
         // Attach mouse drag handlers to nodes
-        // attachDragHandlers(svgRoot, nodes, edges);
+        attachDragHandlers(svgRoot, nodes, edges);
 
     }
 
