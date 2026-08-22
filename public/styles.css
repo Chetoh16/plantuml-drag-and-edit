@@ -31,8 +31,8 @@ html, body {
   background-color: #ffffff;
   border-right: 1px solid #dcdcdc;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-  /* Prevents sidebar from collapsing smaller than 15% */
-  min-width: 15vw; 
+  /* Prevents sidebar from collapsing smaller than 10% */
+  min-width: 10vw; 
 }
 
 .editor-header {

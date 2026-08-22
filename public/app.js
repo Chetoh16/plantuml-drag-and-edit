@@ -28,7 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const containerWidth = appContainer.clientWidth;
-            const minWidthPixels = containerWidth * 0.15; // 15% minimum limit
+
+            // Minimum resizing limit 
+            const minWidthPixels = containerWidth * 0.10; 
 
             let newWidth = e.clientX;
 
