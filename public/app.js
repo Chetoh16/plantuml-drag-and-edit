@@ -63,17 +63,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+    function buildEdges(svgRoot){
+        
+        const edges = {}
+
+        svgRoot.querySelectorAll()
+
+    }
+
     // Parse all class and cluster elements, to get initial positions via SVG getBBox()
     function buildNodes(svgRoot){
 
-        // Dictionary for nodes
         const nodes = {}
 
         // The svg is made out g.entities, g.clusters, g.links , g.title etc.
         // Example:
         // <g xmlns="http://www.w3.org/2000/svg" class="cluster" data-qualified-name="Account" data-source-line="20" id="ent0002">
         // <g xmlns="http://www.w3.org/2000/svg" class="entity" data-qualified-name="Account.User" data-source-line="22" id="ent0003">
-        svgRoot.querySelectorAll(`g.entity`, `g.cluster`).forEach(g => {
+        svgRoot.querySelectorAll('g.entity', 'g.cluster').forEach(g => {
 
             const id = g.getAttribute('id');
             if (!id){
