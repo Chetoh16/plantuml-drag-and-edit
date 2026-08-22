@@ -55,7 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Resize SVG Canvas so dragging area is usable
         expandSvgCanvas(svgRoot, svgHost);
 
+        // Extract nodes
         const nodes = buildNodes(svgRoot);
+
+        // Group nodes based on whether they're in the same cluster (packages)
+        groupNodes(nodes)
 
     }
 
@@ -88,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
             g.classList.add('pu-node')
 
             nodes[id] = {
+
+                // I call it class rather than entity since I mainly work with Class Diagrams
                 id, fullName, type: isCluster? 'cluster' : 'class',
 
                 // Initial x-y coordinate when the diagram is first rendered
@@ -102,6 +108,43 @@ document.addEventListener('DOMContentLoaded', () => {
             };     
         });
         return nodes
+    }
+
+    // A class belongs to a package if its qualified name's prefix
+    // (everything before the LAST dot) matches a package's own qualified name.
+    // E.g.
+    // class="cluster" data-qualified-name="Account"
+    // class="entity" data-qualified-name="Account.User"
+    // Group nodes based on their container (cluster/class)
+    function groupNodes(nodes){
+        
+        // Separate nodes into clusters (containers) and entities/classes (items)
+        // I call it class rather than entity since I mainly work with Class Diagrams
+        const clusters = Object.values(nodes).filter(node => node.type === 'cluster')
+        const classes = Object.values(nodes).filter(node => node.type !== 'cluster')
+
+        classes.forEach(node => {
+            
+            // Find the last dot to get the parent prefix (e.g. "Account" from "Account.User")
+            const lastDot = node.fullName.lastIndexOf('.')
+
+            // Skip if it has no parent package
+            if(lastDot < 0){
+                return;
+            }
+
+            // Extract parent name and attach this node to its matching cluster
+            const parentFullName = node.fullName.slice(0, lastDot)
+            const parent = clusters.find(cluster => cluster.fullName === parentFullName)
+
+
+            // Builds a list of child IDs directly inside the cluster's data object
+            // Basically adds the children nodes inside the parent if they belong to the same cluster
+            if(parent){
+                parent.children.push(node.id)
+            }
+
+        });
     }
         
 
