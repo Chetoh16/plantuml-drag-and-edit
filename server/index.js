@@ -45,32 +45,27 @@ app.post('/render', (req, res) => {
             return res.status(500).send('Failed to create temporary input file.');
         }
 
-        // Create a shell command running Java to process diagram.puml.
-        exec(`java -jar ${jarPath} -tsvg ${diagramSourcePath}`, (err) => {
+        exec(`java -jar "${jarPath}" -tsvg "${diagramSourcePath}"`, (err, stdout, stderr) => {
 
-            // Clean up the .puml file regardless of success or error
+            if (stderr) console.error('PlantUML stderr:', stderr);
+            if (err) console.error('exec error:', err);
+
             if (fs.existsSync(diagramSourcePath)) {
                 fs.unlinkSync(diagramSourcePath);
             }
 
-            if (err){
+            if (err) {
                 return res.status(500).send('PlantUML failed to render. How sad, try again.');
             }
-                        
-            // Read generated SVG output
-            fs.readFile(diagramOutputPath, 'utf8', (readErr, svgData) => {
 
-                // Clean up the generated .svg file after reading
+            fs.readFile(diagramOutputPath, 'utf8', (readErr, svgData) => {
                 if (fs.existsSync(diagramOutputPath)) {
                     fs.unlinkSync(diagramOutputPath);
                 }
-
                 if (readErr) {
                     console.error('File read error:', readErr);
                     return res.status(500).send('Failed to read rendered SVG output.');
                 }
-
-                // Return raw SVG string back to the client
                 res.type('image/svg+xml').send(svgData);
             });
         });

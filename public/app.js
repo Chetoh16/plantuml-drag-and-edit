@@ -1,5 +1,3 @@
-
-
 // Wait for the HTML document structure to fully load before running the script
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -21,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/render', {
                 method: 'POST',
 
-                
                 // Informs the Express backend how to interpret the incoming raw string
                 headers: { 'Content-Type': 'application/json' },
 
@@ -36,18 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Raw text response body returned by the server (which contains the raw SVG markup).
             const rawSvg = await response.text();
-
-            // Puts the raw SVG XML string directly into the div / container to instantly render the diagram image on the page.
-            svgHost.innerHTML = rawSvg;
-
-            // Call custom logic for interactive node functions built later
-            if (typeof initDiagram === 'function') {
-                initDiagram(rawSvg);
-            }
+            initDiagram(rawSvg)
 
         } catch (error) {
             console.error('Rendering error:', error);
             alert('Failed to render diagram.');
         }
     });
+
+    // Main initialisation once SVG string is retrieved
+    function initDiagram(rawSvg) {
+
+        // Initialise the SVG
+        svgHost.innerHTML = rawSvg;
+        
+        // Get the element in order to control it
+        const svgRoot = svgHost.querySelector('svg');
+
+        if (!svgRoot) return;
+    }
 });
