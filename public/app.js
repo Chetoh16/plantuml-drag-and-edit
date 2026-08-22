@@ -55,19 +55,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // Resize SVG Canvas so dragging area is usable
         expandSvgCanvas(svgRoot, svgHost);
 
-        // Extract nodes
+        // Extract nodes (classes/clusters/boxes) and edges (connecting lines)
         const nodes = buildNodes(svgRoot);
+        const edges = buildEdges(svgRoot, nodes)
 
         // Group nodes based on whether they're in the same cluster (packages)
         groupNodes(nodes)
+
+        // Redraw edges/lines
+        redrawAllEdges(nodes, edges);
 
     }
 
     // Extract edge elements linked via data attributes
     // These are the lines between elements
-    function buildEdges(svgRoot){
+    function buildEdges(svgRoot, nodes){
         
-        const edges = {}
+        const edges = []
 
         svgRoot.querySelectorAll('g.link').forEach(g => {
             
@@ -85,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // <text fill="#000000" font-family="sans-serif" .../text></g>
             const pathElement = g.querySelector('path')
             const polygonElement = g.querySelector('polygon')
-            const textElement = g.querySelector('text')
+            const textElements = [...g.querySelectorAll('text')];
 
             if (!pathElement){
                 return;
@@ -93,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Extract data from the elements
             const origPoints = extractPathEndpoints(pathElement.getAttribute('d'));
-            const textMessage = textEls.map(t => ({
+            const textMessage = textElements.map(t => ({
                 origX: parseFloat(t.getAttribute('x')),
                 origY: parseFloat(t.getAttribute('y'))
             }));
@@ -143,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.pathElement.setAttribute('d', `M${p1.x},${p1.y} L${p2.x},${p2.y}`);
 
         // Redraw arrowhead polygon if one exists for this edge
-        if (e.polyElement) {
+        if (e.polygonElement) {
             const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
             const size = 9;
 
@@ -152,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const back2 = { x: p2.x - size * Math.cos(angle + 0.4), y: p2.y - size * Math.sin(angle + 0.4) };
 
             // Update SVG polygon points string to draw triangle (tip, left, right)
-            e.polyElement.setAttribute('points', `${p2.x},${p2.y} ${back1.x},${back1.y} ${back2.x},${back2.y}`);
+            e.polygonElement.setAttribute('points', `${p2.x},${p2.y} ${back1.x},${back1.y} ${back2.x},${back2.y}`);
         }
 
         // Reposition attached text labels if original layout metrics exist
@@ -231,6 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // Helper to iterate through all edges and trigger redraw Edge on each one
+    function redrawAllEdges(nodes, edges) {
+        edges.forEach(e => redrawEdge(e, nodes)); 
+    }
+
 
     // Parse all class and cluster elements, to get initial positions via SVG getBBox()
     function buildNodes(svgRoot){
@@ -241,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Example:
         // <g xmlns="http://www.w3.org/2000/svg" class="cluster" data-qualified-name="Account" data-source-line="20" id="ent0002">
         // <g xmlns="http://www.w3.org/2000/svg" class="entity" data-qualified-name="Account.User" data-source-line="22" id="ent0003">
-        svgRoot.querySelectorAll('g.entity', 'g.cluster').forEach(g => {
+        svgRoot.querySelectorAll('g.entity, g.cluster').forEach(g => {
 
             const id = g.getAttribute('id');
             if (!id){
