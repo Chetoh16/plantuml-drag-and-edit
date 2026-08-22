@@ -67,9 +67,44 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const edges = {}
 
-        svgRoot.querySelectorAll()
+        svgRoot.querySelectorAll('g.link').forEach(g => {
+            
+            const linkFrom = g.getAttribute('data-entity-1')
+            const linkTo = g.getAttribute('data-entity-2')
 
+            if (!linkFrom || !linkTo || !nodes[linkFrom] || !nodes[linkTo]){
+                return;
+            }
+
+            // Example SVG input
+            // <g class="link" data-entity-1="ent0006" data-entity-2="ent0016" data-link-type="dependency" data-source-line="136" id="lnk24">
+            // <path .../>
+            // <polygon fill="#444444" points="264.9,737...."/>
+            // <text fill="#000000" font-family="sans-serif" .../text></g>
+            const pathElement = g.querySelector('path')
+            const polygonElement = g.querySelector('polygon')
+            const textElement = g.querySelector('text')
+
+            if (!pathElement){
+                return;
+            }
+
+            const origPoints = extractPathEndpoints(pathEl.getAttribute('d'));
+            const textMs = textEls.map(t => ({
+                origX: parseFloat(t.getAttribute('x')),
+                origY: parseFloat(t.getAttribute('y'))
+            }));
+            edges.push({ from, to, pathEl, polyEl, textEls, textMs, origPoints });
+            
+        });
+
+        return edges
     }
+
+    function extractPathEndpoints(d){
+        return
+    }
+
 
     // Parse all class and cluster elements, to get initial positions via SVG getBBox()
     function buildNodes(svgRoot){
