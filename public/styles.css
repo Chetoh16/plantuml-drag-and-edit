@@ -21,6 +21,7 @@ html, body {
 
 /* Left Sidebar - Editor Column */
 .editor-column {
+  /*Initial width*/
   width: 28%;
   min-width: 280px;
   max-width: 450px;
@@ -30,6 +31,8 @@ html, body {
   background-color: #ffffff;
   border-right: 1px solid #dcdcdc;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  /* Prevents sidebar from collapsing smaller than 15% */
+  min-width: 15vw; 
 }
 
 .editor-header {
@@ -80,6 +83,22 @@ html, body {
 
 #renderBtn:hover {
   background-color: rgb(212, 11, 4);
+}
+
+/* Resizer Handle */
+.resizer {
+    width: 6px;
+    height: 100%;
+    background-color: #e0e0e0;
+    cursor: col-resize;
+    user-select: none;
+    transition: background-color 0.2s ease;
+    z-index: 10;
+}
+
+.resizer:hover,
+.resizer.resizing {
+    background-color: #0066cc;
 }
 
 /* Right Column - Diagram Space */

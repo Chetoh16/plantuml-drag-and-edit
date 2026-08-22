@@ -5,7 +5,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderBtn = document.getElementById('renderBtn');
     const codeInput = document.getElementById('code');
     const svgHost = document.getElementById('svgHost');
+    const resizer = document.getElementById('resizer');
+    const editorColumn = document.getElementById('editorColumn');
+    const appContainer = document.getElementById('appContainer');
 
+    // Reference to store current active SVG root element for window resize adjustments
+    let activeSvgRoot = null;
+
+    // SPLIT RESIZER LOGIC
+    let isResizing = false;
+    if (resizer && editorColumn && appContainer) {
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            resizer.classList.add('resizing');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none'; // Prevents text highlighting while dragging
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isResizing){
+                return;
+            }
+            
+            const containerWidth = appContainer.clientWidth;
+            const minWidthPixels = containerWidth * 0.15; // 15% minimum limit
+
+            let newWidth = e.clientX;
+
+            // Clamp left side to minimum 15% width
+            if (newWidth < minWidthPixels) {
+                newWidth = minWidthPixels;
+            }
+
+            editorColumn.style.width = `${newWidth}px`;
+
+            // If an SVG is currently rendered, adjust canvas bounds on resize
+            if (activeSvgRoot) {
+                expandSvgCanvas(activeSvgRoot, svgHost);
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('resizing');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+    }
+    
 
     renderBtn.addEventListener('click', async () => {
         const code = codeInput.value.trim();
@@ -50,17 +99,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get the element in order to control it
         const svgRoot = svgHost.querySelector('svg');
 
-        if (!svgRoot) return;
+        if (!svgRoot) {
+            activeSvgRoot = null;
+            return;
+        }
+
+        // Store reference to active SVG root so the resizer can target it
+        activeSvgRoot = svgRoot;
 
         // Resize SVG Canvas so dragging area is usable
         expandSvgCanvas(svgRoot, svgHost);
 
         // Extract nodes (classes/clusters/boxes) and edges (connecting lines)
         const nodes = buildNodes(svgRoot);
-        const edges = buildEdges(svgRoot, nodes)
+        const edges = buildEdges(svgRoot, nodes);
 
         // Group nodes based on whether they're in the same cluster (packages)
-        groupNodes(nodes)
+        groupNodes(nodes);
 
         // Redraw edges/lines
         redrawAllEdges(nodes, edges);
@@ -73,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Parse all class and cluster elements, to get initial positions via SVG getBBox()
     function buildNodes(svgRoot){
 
-        const nodes = {}
+        const nodes = {};
 
         // The svg is made out g.entities, g.clusters, g.links , g.title etc.
         // Example:
@@ -83,19 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const id = g.getAttribute('id');
             if (!id){
-                return
+                return;
             }
             const isCluster = g.classList.contains('cluster');
 
             // Full package and class name (e.g. "AuthPackage.User") used for grouping
             // If there is no qualified name, default to id
-            const fullName = g.getAttribute('data-qualified-name') || id
+            const fullName = g.getAttribute('data-qualified-name') || id;
 
             // getBBox() works for any shape (rect for classes, path for package borders)
             const box = g.getBBox();
 
             // Sets the mouse cursor to "grab"
-            g.classList.add('pu-node')
+            g.classList.add('pu-node');
 
             nodes[id] = {
 
@@ -113,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 children: []
             };     
         });
-        return nodes
+        return nodes;
     }
 
     // A class belongs to a package if its qualified name's prefix
@@ -332,8 +387,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function expandSvgCanvas(svgRoot, containerEl) {
 
         // Get PlantUML's real diagram size BEFORE overriding anything
-        const origW = parseFloat(svgRoot.getAttribute('width'));
-        const origH = parseFloat(svgRoot.getAttribute('height'));
+        // Fallback to current bounding dimensions if attributes are absent
+        const origW = parseFloat(svgRoot.getAttribute('width')) || svgRoot.getBBox().width;
+        const origH = parseFloat(svgRoot.getAttribute('height')) || svgRoot.getBBox().height;
 
         // Pick the biggest width/height out of canvas and SVG so that there's as much
         // working space (dragging area) as possible
@@ -351,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
         svgRoot.style.width = canvasW + 'px';
         svgRoot.style.height = canvasH + 'px';
     }
-
 
     // Transform screen click coordinates into SVG canvas space coordinates
     function getSvgPoint(svgRoot, ev) {

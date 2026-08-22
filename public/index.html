@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div class="app-container">
+    <div class="app-container" id="appContainer">
 
         <!-- Left Sidebar Column -->
-        <div class="editor-column">
+        <div class="editor-column" id="editorColumn">
             <div class="editor-header">
                 <h2>PlantUML Drag & Edit</h2>
             </div>
@@ -26,7 +26,10 @@ Customer --> Order
             </div>
         </div>
 
-        <!-- Right Diagram Dragging Area-->
+        <!-- Draggable Split Bar -->
+        <div id="resizer" class="resizer"></div>
+
+        <!-- Right Diagram Dragging Area -->
         <div id="svgHost" class="diagram-column"></div>
     </div>
 
