@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Raw text response body returned by the server (which contains the raw SVG markup).
             const rawSvg = await response.text();
-            initDiagram(rawSvg)
+            initDiagram(rawSvg);
 
         } catch (error) {
             console.error('Rendering error:', error);
@@ -64,6 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Redraw edges/lines
         redrawAllEdges(nodes, edges);
+
+        // Attach mouse drag handlers to nodes
+        // attachDragHandlers(svgRoot, nodes, edges);
 
     }
 
@@ -325,8 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-
-
     // Dynamically adjust SVG viewport so dragging area (canvas) expands to fill the container (div)
     function expandSvgCanvas(svgRoot, containerEl) {
 
@@ -350,5 +351,21 @@ document.addEventListener('DOMContentLoaded', () => {
         svgRoot.style.width = canvasW + 'px';
         svgRoot.style.height = canvasH + 'px';
     }
+
+
+    // Transform screen click coordinates into SVG canvas space coordinates
+    function getSvgPoint(svgRoot, event) {
+
+        // Create an empty SVG point object
+        const point = svgRoot.createSVGPoint();
+
+        // Set the point's coordinates to the click coordinates
+        point.x = event.clientX;
+        point.y = event.clientY;
+
+        return point.matrixTransform(svgRoot.getScreenCTM().inverse());
+    }
+
+
 
 });
