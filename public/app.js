@@ -106,8 +106,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return edges
     }
 
+    // Get start (x1, y1) and end (x2, y2) coordinate points from path d attributes
     function extractPathEndpoints(d){
-        return
+
+        // Find all numbers in the path string (including negatives and decimals) and convert them to Number types
+        // For example: "M 10.5 20.2 L 50 100" (M is MoveTo (start) and L is Line to (where to draw the line to))
+        // -?: Matches an optional minus sign for negative numbers
+        // [\d.]+: Matches one or more digits (\d) or decimal points (.)
+        // g: Global flag—finds all matching numbers in the string, not just the first one.
+        // ["10.5", "20.2", "50", "100"].
+        const nums = d.match(/-?[\d.]+/g).map(Number);
+
+        // Return the first two numbers as the start point, and the last two numbers as the end point
+        return { x1: nums[0], y1: nums[1], x2: nums[nums.length - 2], y2: nums[nums.length - 1] };
     }
 
 
