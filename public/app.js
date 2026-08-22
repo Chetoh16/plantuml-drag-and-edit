@@ -41,6 +41,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Main initialisation once SVG string is retrieved
+    function initDiagram(rawSvg) {
+
+        // Initialise the SVG
+        svgHost.innerHTML = rawSvg;
+        
+        // Get the element in order to control it
+        const svgRoot = svgHost.querySelector('svg');
+
+        if (!svgRoot) return;
+
+        // Resize SVG Canvas so dragging area is usable
+        expandSvgCanvas(svgRoot, svgHost);
+
+        const nodes = buildNodes(svgRoot);
+
+    }
+
+    // Parse all class and cluster elements, to get initial positions via SVG getBBox()
+    function buildNodes(svgRoot){
+
+        // Dictionary for nodes
+        const nodes = {}
+
+        // The svg is made out g.entities, g.clusters, g.links , g.title etc.
+        // Example:
+        // <g xmlns="http://www.w3.org/2000/svg" class="cluster" data-qualified-name="Account" data-source-line="20" id="ent0002">
+        // <g xmlns="http://www.w3.org/2000/svg" class="entity" data-qualified-name="Account.User" data-source-line="22" id="ent0003">
+        svgRoot.querySelectorAll(`g.entity`, `g.cluster`).forEach(g => {
+
+            const id = g.getAttribute('id');
+            if (!id){
+                return
+            }
+            const isCluster = g.classList.contains('cluster');
+
+            // Full package and class name (e.g. "AuthPackage.User") used for grouping
+            // If there is no qualified name, default to id
+            const fullName = g.getAttribute('data-qualified-name') || id
+
+            // getBBox() works for any shape (rect for classes, path for package borders)
+            const box = g.getBBox();
+
+            // Sets the mouse cursor to "grab"
+            g.classList.add('pu-node')
+
+            nodes[id] = {
+                id, fullName, type: isCluster? 'cluster' : 'class',
+
+                // Initial x-y coordinate when the diagram is first rendered
+                origX: box.x, origY: box.y, 
+                w: box.width, h: box.height,
+                // Current x-y coordinate
+                curX: box.x, curY: box.y,
+                // Reference to the SVG <g> DOM element representing this node (Group Element)
+                groupEl: g, 
+                // Array of child node IDs contained inside this package (used if nodeType is 'cluster')
+                children: []
+            };     
+        });
+        return nodes
+    }
+        
+
     // Dynamically adjust SVG viewport so dragging area (canvas) expands to fill the container (div)
     function expandSvgCanvas(svgRoot, containerEl) {
 
@@ -65,19 +129,4 @@ document.addEventListener('DOMContentLoaded', () => {
         svgRoot.style.height = canvasH + 'px';
     }
 
-
-    // Main initialisation once SVG string is retrieved
-    function initDiagram(rawSvg) {
-
-        // Initialise the SVG
-        svgHost.innerHTML = rawSvg;
-        
-        // Get the element in order to control it
-        const svgRoot = svgHost.querySelector('svg');
-
-        if (!svgRoot) return;
-
-        // Resize SVG Canvas so dragging area is usable
-        expandSvgCanvas(svgRoot, svgHost)
-    }
 });
