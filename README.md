@@ -71,6 +71,7 @@ Open `http://localhost:3000`.
 - **Size Buttons.** Allow boxes/classes/packages to be sized up easily
 - **Zoom in/out Buttons.**
 - **Import - Export Buttons.** 
+- When in `dragging` state, add an outline for clarity (like yellow).
 
 ## Deployment notes
 This app needs a persistent server with a JVM available (for `plantuml.jar`). Static hosts like Netlify cannot run this. They only serve static files or short-lived serverless functions with no Java runtime. 
