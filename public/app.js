@@ -89,12 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const origPoints = extractPathEndpoints(pathEl.getAttribute('d'));
-            const textMs = textEls.map(t => ({
+            
+            const origPoints = extractPathEndpoints(pathElement.getAttribute('d'));
+            const textMessage = textEls.map(t => ({
                 origX: parseFloat(t.getAttribute('x')),
                 origY: parseFloat(t.getAttribute('y'))
             }));
-            edges.push({ from, to, pathEl, polyEl, textEls, textMs, origPoints });
+            edges.push({ linkFrom, linkTo, pathElement, polygonElement, textElement, textMessage, origPoints });
             
         });
 
