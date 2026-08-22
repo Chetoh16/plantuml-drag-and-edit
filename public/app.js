@@ -366,6 +366,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return point.matrixTransform(svgRoot.getScreenCTM().inverse());
     }
 
+    // Translates the group element to its new X/Y position
+    function moveNodeTo(node, newX, newY) {
+
+        // Apply CSS SVG transform translate attribute using distance moved from initial coordinates
+        node.groupEl.setAttribute('transform', `translate(${newX - node.origX},${newY - node.origY})`);
+
+        // Update the stored current positions
+        node.curX = newX;
+        node.curY = newY;
+    }
+
 
 
 });
