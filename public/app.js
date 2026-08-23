@@ -680,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
         img.src = svgUrl;
     }); 
 
-    // Re-render background colour live
+    // Re-render background colour 
     bgColorInput.addEventListener('input', (e) => {
         canvasBgColor = e.target.value;
         // Only touch the live SVG if one actually exists right now

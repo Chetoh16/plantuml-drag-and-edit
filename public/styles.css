@@ -203,7 +203,7 @@ html, body {
 }
 
 .bg-color-btn:hover {
-  background-color: rgba(0, 102, 204, 0.9);
+  background-color: #d40b04;
 }
 
 .bg-color-btn svg {
