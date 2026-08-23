@@ -44,7 +44,18 @@ Customer --> Order
         <div id="resizer" class="resizer"></div>
 
         <!-- Right Diagram Dragging Area -->
-        <div id="svgHost" class="diagram-column"></div>
+        <!-- svgHost holds the diagram viewer and the export buttons -->
+        <div id="svgHost" class="diagram-column">
+
+            <!-- svgCanvas is the rendered diagram and gets updated on each render -->
+            <div id="svgCanvas" class="svg-canvas"></div>
+
+            <div id="exportBar" class="export-bar">
+                <button id="exportSvgBtn" type="button" title="Export as SVG">Export SVG</button>
+                <button id="exportPngBtn" type="button" title="Export as PNG">Export PNG</button>
+            </div>
+        </div>
+
     </div>
 
     <script src="app.js"></script>
