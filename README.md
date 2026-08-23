@@ -26,9 +26,9 @@ No PlantUML internals are modified. This project only adds a drag layer on top o
 
 ## Requirements
 
-- **Java** (JRE) — to run `plantuml.jar`
-- **Node.js** — for the server
-- **plantuml.jar** — download a current version from [plantuml.com/download](https://plantuml.com/download) and place it in `server/`. Must be a recent version; older versions (pre-2023ish) emit a different SVG structure this parser doesn't support. (This is already uploaded but you might want to replace it with a newer version in the future)
+- **Java** (JRE) - to run `plantuml.jar`
+- **Node.js** - for the server
+- **plantuml.jar** - download a current version from [plantuml.com/download](https://plantuml.com/download) and place it in `server/`. Must be a recent version; older versions (pre-2023ish) emit a different SVG structure this parser doesn't support. (This is already uploaded but you might want to replace it with a newer version in the future)
 
 ## Setup
 
