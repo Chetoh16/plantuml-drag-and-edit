@@ -4,10 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get references to the DOM elements to interact with
     const renderBtn = document.getElementById('renderBtn');
     const codeInput = document.getElementById('code');
+
+
+    // svgHost is the permanent outer shell (used for sizing/resizing math).
+    // svgCanvas is the INNER div that actually gets overwritten on each render.
     const svgHost = document.getElementById('svgHost');
+    const svgCanvas = document.getElementById('svgCanvas')
+
     const resizer = document.getElementById('resizer');
     const editorColumn = document.getElementById('editorColumn');
     const appContainer = document.getElementById('appContainer');
+
+    const exportSvgBtn = document.getElementById('exportSvgBtn');
+    const exportPngBtn = document.getElementById('exportPngBtn');
 
     // Reference to store current active SVG root element for window resize adjustments
     let activeSvgRoot = null;
@@ -96,17 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function initDiagram(rawSvg) {
 
         // Initialise the SVG
-        svgHost.innerHTML = rawSvg;
+        svgCanvas.innerHTML = rawSvg;
         
         // Get the element in order to control it
-        const svgRoot = svgHost.querySelector('svg');
+        const svgRoot = svgCanvas.querySelector('svg');
 
         if (!svgRoot) {
             activeSvgRoot = null;
             return;
         }
 
-        // Store reference to active SVG root so the resizer can target it
+        // Store reference to active SVG root so the resizer and export buttons can target it
         activeSvgRoot = svgRoot;
 
         // Resize SVG Canvas so dragging area is usable
