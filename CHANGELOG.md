@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## Added
+- Export buttons
+- Highlight on drag
+- Drag title
+- Re-render Background colour live
+
 ## [1.0.0] - 2026-08-23
 
 ### Added
