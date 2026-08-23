@@ -522,5 +522,142 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // EXPORT: turn the current on-screen layout (after dragging) into a downloadable .svg or .png file.
+    // Builds a version of the diagram sized to just its actual content (not the big expanded drag-canvas)
+    function getTrimmedSvgClone(svgRoot) {
+
+
+        // Find the main group tag (<g>) that holds all diagram shapes and text
+        // (':scope' means 'svgRoot' itself.
+        // ':scope > g' looks ONLY for a <g> tag that is a direct child of svgRoot)
+        const contentGroup = svgRoot.querySelector(':scope > g');
+
+        // Get the exact width, height, and coordinates of the diagram contents
+        const bbox = contentGroup ? contentGroup.getBBox() : svgRoot.getBBox();
+
+        // Add small margin so shapes do not touch the image edge
+        const padding = 20;
+        const minX = bbox.x - padding;
+        const minY = bbox.y - padding;
+        const width = bbox.width + padding * 2;
+        const height = bbox.height + padding * 2;
+
+        // Duplicate the live SVG element so it does not break the live diagram
+        const clone = svgRoot.cloneNode(true);
+
+        // Crop the copy to fit the content exactly
+        clone.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
+        clone.setAttribute('width', width);
+        clone.setAttribute('height', height);
+
+        // Remove fixed inline styles so sizing stays correct
+        clone.style.width = '';
+        clone.style.height = '';
+
+        return { clone, width, height };
+    }
+
+    // Turn the SVG element into a raw text string
+    function serializeSvg(svgEl) {
+        const serializer = new XMLSerializer();
+        const xml = serializer.serializeToString(svgEl);
+
+        // Add standard XML header so the SVG opens nicely in other programs (image viewers/editors outside the browser)
+        return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n${xml}`;
+    }
+
+    // Trigger an automatic file download in the browser
+    function downloadFile(fileData, filename) {
+
+        // Create a temporary browser URL pointing to the file data in memory
+        const url = URL.createObjectURL(fileData);
+
+        // Create an invisible link element to trigger the download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+
+        // Simulate a click on the link to start downloading
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Free up the memory used for the temporary URL
+        URL.revokeObjectURL(url);
+    }
+
+    // Handle "Export SVG" button click
+    exportSvgBtn.addEventListener('click', () => {
+        if (!activeSvgRoot) {
+            alert('Render a diagram first.');
+            return;
+        }
+
+        // {clone} to only get that out of the 3 variables getTrimmedSvgClone returns
+        const { clone } = getTrimmedSvgClone(activeSvgRoot);
+        const svgString = serializeSvg(clone);
+
+        // Browsers cannot directly download plain JavaScript strings stored in memory. 
+        // A Blob turns the raw SVG text string (svgString) into a byte-for-byte file stored in memory
+        // so the browser can generate a download URL via URL.createObjectURL(blob). 
+        // URL.createObjectURL acts as a temporary, local web address that points directly to the data sitting in the browser's RAM.
+        const blob = new Blob([svgString], { type: 'image/svg+xml' });
+        downloadFile(blob, 'diagram.svg');
+    });
+
+    // Handle "Export PNG" button click
+    exportPngBtn.addEventListener('click', () => {
+        if (!activeSvgRoot) {
+            alert('Render a diagram first.');
+            return;
+        }
+
+        const { clone, width, height } = getTrimmedSvgClone(activeSvgRoot);
+        const svgString = serializeSvg(clone);
+
+
+        // Convert the SVG into a image object, then draw it onto a canvas to make a PNG
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+
+            // Scale up 2x so the downloaded PNG looks crisp on high-res screens
+            const scale = 2;
+            const canvas = document.createElement('canvas');
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+
+            const ctx = canvas.getContext('2d');
+                        
+            // Draw a solid white background (otherwise the PNG will be see-through)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the diagram image on top
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            URL.revokeObjectURL(svgUrl);
+
+            // Convert canvas contents into a downloadable PNG file
+            canvas.toBlob((pngBlob) => {
+                if (!pngBlob) {
+                    alert('PNG export failed.');
+                    return;
+                }
+                downloadFile(pngBlob, 'diagram.png');
+            }, 'image/png');
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(svgUrl);
+            alert('PNG export failed while loading the diagram image.');
+        };
+        img.src = svgUrl;
+    });
+
+
+
 
 });
