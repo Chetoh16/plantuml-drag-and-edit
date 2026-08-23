@@ -1,10 +1,13 @@
 // Wait for the HTML document structure to fully load before running the script
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Render lucide's <i data-lucide="..."> tags into real inline SVG icons
+    lucide.createIcons();
+
 
     // Get references to the DOM elements to interact with
     const renderBtn = document.getElementById('renderBtn');
     const codeInput = document.getElementById('code');
-
 
     // svgHost is the permanent outer shell (used for sizing/resizing math).
     // svgCanvas is the INNER div that actually gets overwritten on each render.
@@ -17,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exportSvgBtn = document.getElementById('exportSvgBtn');
     const exportPngBtn = document.getElementById('exportPngBtn');
+
+    const bgColorInput = document.getElementById('bgColorInput');
+    // Default canvas colour
+    let canvasBgColor = '#ffffff';
 
     // Reference to store current active SVG root element for window resize adjustments
     let activeSvgRoot = null;
@@ -117,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Store reference to active SVG root so the resizer and export buttons can target it
         activeSvgRoot = svgRoot;
+
+        activeSvgRoot.style.background = canvasBgColor;
 
         // Resize SVG Canvas so dragging area is usable
         expandSvgCanvas(svgRoot, svgHost);
@@ -669,9 +678,18 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('PNG export failed while loading the diagram image.');
         };
         img.src = svgUrl;
+    }); 
+
+    // Re-render background colour live
+    bgColorInput.addEventListener('input', (e) => {
+        canvasBgColor = e.target.value;
+        // Only touch the live SVG if one actually exists right now
+        if (activeSvgRoot) {
+            activeSvgRoot.style.background = canvasBgColor;
+        }
+
+        // Update container background if no SVG is rendered yet
+        svgCanvas.style.backgroundColor = canvasBgColor;
     });
-
-
-
 
 });

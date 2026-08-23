@@ -55,10 +55,18 @@ Customer --> Order
                 <button id="exportSvgBtn" type="button" title="Export as SVG">Export SVG</button>
                 <button id="exportPngBtn" type="button" title="Export as PNG">Export PNG</button>
             </div>
+
+            <div class="bg-color-control">
+                <input type="color" id="bgColorInput" class="bg-color-input" value="#ffffff" />
+                <label for="bgColorInput" class="bg-color-btn" title="Change canvas background">
+                    <i data-lucide="palette"></i>
+                </label>
+            </div>
         </div>
 
     </div>
 
     <script src="app.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </body>
 </html>
