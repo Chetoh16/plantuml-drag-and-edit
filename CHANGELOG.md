@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## Added
-- Export buttons
-- Highlight on drag
-- Drag title
-- Re-render Background colour live
+## [1.1.0] - 2026-08-23
 
-## [1.0.0] - 2026-08-23
+## Added
+- Export buttons to download the current, as-dragged layout as SVG or PNG
+- Drag-in-progress highlight: dragged node gets a solid yellow outline.
+- Diagram title (g.title) is now draggable alongside classes and packages.
+- Re-render Background colour live.
+
+## [1.0.0] - 2026-08-22
 
 ### Added
 - Package/cluster support: dragging a package moves its contained classes with it, determined by matching `data-qualified-name` prefixes (e.g. class `Account.User` belongs to package `Account`).
