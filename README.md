@@ -69,10 +69,9 @@ Open `http://localhost:3000`.
 - **Single-user, local use.** The server has no auth, and concurrent requests use per-request temp files but no queueing/rate-limiting so not intended for public deployment as-is.
 
 ## Future Implementations
-- **Colour Picker.** Allow background colours to be changed in the visual editor.
 - **Size Buttons.** Allow boxes/classes/packages to be sized up easily
 - **Zoom in/out Buttons.**
-- **Import - Export Buttons.** 
+- **Import SVG Button.** 
 
 ## Deployment Notes
 This app needs a persistent server with a JVM available (for `plantuml.jar`). Static hosts like Netlify cannot run this. They only serve static files or short-lived serverless functions with no Java runtime. 
