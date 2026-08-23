@@ -145,13 +145,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Example:
         // <g xmlns="http://www.w3.org/2000/svg" class="cluster" data-qualified-name="Account" data-source-line="20" id="ent0002">
         // <g xmlns="http://www.w3.org/2000/svg" class="entity" data-qualified-name="Account.User" data-source-line="22" id="ent0003">
-        svgRoot.querySelectorAll('g.entity, g.cluster').forEach(g => {
+        svgRoot.querySelectorAll('g.entity, g.cluster, g.title').forEach(g => {
 
-            const id = g.getAttribute('id');
+            let id = g.getAttribute('id');
+
+            // title doesn't have an id attribute, so have to add one to make it draggable.
+            if (!id && g.classList.contains('title')) {
+                id = 'diagram-title';
+            }
+
             if (!id){
                 return;
             }
-            const isCluster = g.classList.contains('cluster');
+
+            // I call it class rather than entity since I mainly work with Class Diagrams
+            let type = 'class';
+            
+            if(g.classList.contains('cluster')){
+                type = 'cluster'
+            }
+            else if(g.classList.contains('title')){
+                type = 'title'
+            }
 
             // Full package and class name (e.g. "AuthPackage.User") used for grouping
             // If there is no qualified name, default to id
@@ -165,8 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             nodes[id] = {
 
-                // I call it class rather than entity since I mainly work with Class Diagrams
-                id, fullName, type: isCluster? 'cluster' : 'class',
+                id, fullName, type,
 
                 // Initial x-y coordinate when the diagram is first rendered
                 origX: box.x, origY: box.y, 

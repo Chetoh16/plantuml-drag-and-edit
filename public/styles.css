@@ -146,14 +146,13 @@ html, body {
 
 .pu-node.dragging {
   cursor: grabbing;
-  
+
   /* Drop-shadow around the rendered shape to highlight the node being dragged*/
   filter:
     drop-shadow(2px 0 0 #f2c400)
     drop-shadow(-2px 0 0 #f2c400)
     drop-shadow(0 2px 0 #f2c400)
     drop-shadow(0 -2px 0 #f2c400);
-
 }
 
 /* Pinned to the bottom-left corner of the diagram column*/
