@@ -28,6 +28,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reference to store current active SVG root element for window resize adjustments
     let activeSvgRoot = null;
 
+    // localStorage keys
+    const STORAGE_KEYS = {
+        CODE: 'plantuml-drag-code',
+        SVG: 'plantuml-drag-svg'
+    };
+
+    // Restore whatever the user last typed, so refreshing the page doesn't wipe out unsaved work. 
+    // Falls back silently to the textarea's default placeholder content if nothing has been saved yet.
+    try {
+        const savedCode = localStorage.getItem(STORAGE_KEYS.CODE);
+        if (savedCode !== null) {
+            codeInput.value = savedCode;
+        }
+    } catch (err) {
+        console.warn('Could not read saved code from localStorage:', err);
+    }
+
+    // Restore the last-rendered diagram (pre-drag layout) so the canvas isn't empty after a refresh. 
+    // This gets overwritten the next time the user clicks "Render Diagram".
+    try {
+        const savedSvg = localStorage.getItem(STORAGE_KEYS.SVG);
+        if (savedSvg) {
+            initDiagram(savedSvg);
+        }
+    } catch (err) {
+        console.warn('Could not read saved diagram from localStorage:', err);
+    }
+
+    // Do not writing to localStorage on every single keystroke
+    let codeSaveTimeout = null;
+
+    // Persist code as the user types
+    codeInput.addEventListener('input', () => {
+        clearTimeout(codeSaveTimeout);
+        codeSaveTimeout = setTimeout(() => {
+            try {
+                localStorage.setItem(STORAGE_KEYS.CODE, codeInput.value);
+            } catch (err) {
+                console.warn('Could not save code to localStorage:', err);
+            }
+        }, 300);
+    });
+
+
+
     // SPLIT RESIZER LOGIC
     let isResizing = false;
     if (resizer && editorColumn && appContainer) {
