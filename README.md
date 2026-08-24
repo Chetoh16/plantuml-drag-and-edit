@@ -4,6 +4,14 @@ A local web app for editing PlantUML class diagrams with draggable layout. Write
 
 ![Demo](public/assets/plantuml-drag-demo.gif)
 
+## How To Use
+
+1. Type PlantUML class diagram code (could work with other diagram types, but haven't been explicitly tested) in the textarea (see example pre-filled on load).
+2. Click **Render Diagram**.
+3. Drag any class box to reposition it.
+4. Drag a package's background/border to move it and everything inside it together. Drag an individual class within a package to move just that class.
+5. If you drag a class fully outside its package's border, a dashed guide line appears connecting it back to its package for as long as you're dragging it, so you don't lose track of where it belongs. The guide line disappears once you release the mouse and never appears in exported SVGs/PNGs.
+
 ## Why
 
 I love using PlantUML to create my class diagrams. Not for fun, but for my university courseworks & projects. I'm not a psychopath.
@@ -12,6 +20,7 @@ Let me tell you, it's not a fun process. So I made this tool to be able to easil
 look just how I want them to look. 
 
 It doesn't replace PlantUML's rendering or syntax because that part works great already. It takes PlantUML's own SVG output and adds interactive dragging on top of it.
+
 
 
 ## How It Works
@@ -51,13 +60,6 @@ node server/index.js
 ```
 
 Open `http://localhost:3000`.
-
-## How To Use
-
-1. Type PlantUML class diagram code (could work with other diagram types, but haven't been explicitly tested) in the textarea (see example pre-filled on load).
-2. Click **Render Diagram**.
-3. Drag any class box to reposition it.
-4. Drag a package's background/border to move it and everything inside it together. Drag an individual class within a package to move just that class.
 
 
 ## Known Limitations

@@ -189,6 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Group nodes based on whether they're in the same cluster (packages)
         groupNodes(nodes);
 
+        // Create a hidden dashed guide lines for every class that belongs to a package,
+        // so if they are dragged outside their package, they are shown to the user.
+        createGuideLines(svgRoot, nodes);
+
         // Redraw edges/lines
         redrawAllEdges(nodes, edges);
 
@@ -251,7 +255,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reference to the SVG <g> DOM element representing this node (Group Element)
                 groupEl: g, 
                 // Array of child node IDs contained inside this package (used if nodeType is 'cluster')
-                children: []
+                children: [],
+                // id of the package/cluster this node lives inside, if any
+                parentId: null,
+                // Reference to this node's dashed guide-line <line> element
+                guideLine: null
             };     
         });
         return nodes;
@@ -289,11 +297,92 @@ document.addEventListener('DOMContentLoaded', () => {
             // Basically adds the children nodes inside the parent if they belong to the same cluster
             if(parent){
                 parent.children.push(node.id)
+
+                // Record the relationship for quick look up
+                node.parentId = parent.id
             }
 
         });
     }
-        
+     
+    // Build one hidden dashed <line> for every class (that's in a package) to connect it to its package.
+    // Created once (rather than during drag) to make dragging feel instant.
+    function createGuideLines(svgRoot, nodes){
+
+        Object.values(nodes).forEach(node => {
+
+            if (!node.parentId){
+                return;
+            }
+
+            const parent = nodes[node.parentId];
+            if (!parent){
+                return;
+            }
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+
+            // Tagged with a dedicated class so it can be:
+            // styled via CSS (styles.css) and stripped out of exported SVG/PNG clones
+            line.setAttribute('class', 'pu-guide-line');
+            line.setAttribute('stroke-dasharray', '6,4');
+
+            // Hidden until the owning class is actually being dragged AND is outside its package
+            line.style.display = 'none';
+
+            svgRoot.appendChild(line);
+            node.guideLine = line;
+        });
+    }
+
+
+    // Checks if a overlaps b
+    // Used to check if the class has been dragged out of its class completely (if so show dashed lines)
+    function rectsOverlap(a, b) {
+        return !(
+            a.curX + a.w <= b.curX ||
+            b.curX + b.w <= a.curX ||
+            a.curY + a.h <= b.curY ||
+            b.curY + b.h <= a.curY
+        );
+    }
+
+    // Show/hide and reposition a single class' dashed line based on its current position relative to its package. 
+    // Called continuously while that specific class is being dragged.
+    function updateGuideLine(node, nodes) {
+
+        if (!node.parentId || !node.guideLine){
+            return;
+        }
+
+        const parent = nodes[node.parentId];
+        if (!parent){
+            return;
+        }
+
+        // Still (at least partially) inside its package so no line needed.
+        if (rectsOverlap(node, parent)) {
+            node.guideLine.style.display = 'none';
+            return;
+        }
+
+        // Fully outside
+        // Draw a dashed line from the class's border to its package's border, aimed at each other's centers 
+        // (same approach used for the solid relationship lines in redrawEdge()).
+        const childCenter = { x: node.curX + node.w / 2, y: node.curY + node.h / 2 };
+        const parentCenter = { x: parent.curX + parent.w / 2, y: parent.curY + parent.h / 2 };
+
+        const p1 = rectEdgeIntersection(node, parentCenter.x, parentCenter.y);
+        const p2 = rectEdgeIntersection(parent, childCenter.x, childCenter.y);
+
+        node.guideLine.setAttribute('x1', p1.x);
+        node.guideLine.setAttribute('y1', p1.y);
+        node.guideLine.setAttribute('x2', p2.x);
+        node.guideLine.setAttribute('y2', p2.y);
+        node.guideLine.style.display = '';
+    }
+
+
 
     // Extract edge elements linked via data attributes
     // These are the lines between elements
@@ -545,6 +634,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 offsetX = point.x - n.curX;
                 offsetY = point.y - n.curY;
 
+                // If this class belongs to a package, evaluate its dashed line
+                updateGuideLine(n, nodes);
+
                 // Prevent default browser drag-and-drop and text selection behaviors
                 ev.preventDefault();
 
@@ -583,6 +675,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                     });
                 }
+
+                // Keep this class' dashed line (if any) glued to its current position/visibility while it's being dragged.
+                updateGuideLine(n, nodes);
+
                 // Recalculate positions for all connected diagram arrows and edge elements
                 redrawAllEdges(nodes, edges);
             });
@@ -592,12 +688,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dragging) {
                     dragging = false;
                     n.groupEl.classList.remove('dragging');
+
+                    // Hide dashed lines when nothing is being dragged so they don't appear when being exported
+                    if (n.guideLine) {
+                        n.guideLine.style.display = 'none';
+                    }
                 }
             });
         });
     }
 
-    // EXPORT: turn the current on-screen layout (after dragging) into a downloadable .svg or .png file.
+    // Export the current on-screen layout (after dragging) into a downloadable .svg or .png file.
     // Builds a version of the diagram sized to just its actual content (not the big expanded drag-canvas)
     function getTrimmedSvgClone(svgRoot) {
 
@@ -628,6 +729,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove fixed inline styles so sizing stays correct
         clone.style.width = '';
         clone.style.height = '';
+
+        // Strip every dashed line from the exported copy just in case
+        clone.querySelectorAll('.pu-guide-line').forEach(el => el.remove());
 
         return { clone, width, height };
     }

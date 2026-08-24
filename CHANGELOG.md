@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-24
+
+### Added
+- Dashed guide lines connecting a class to its package when it has been dragged out of its package. Only appears while the class is being dragged, and only once it has moved fully outside its package's bounding box (any amount of overlap still counts as "inside").
+- `rectsOverlap()` helper for the above: simple AABB intersection test.
+- `createGuideLines()` / `updateGuideLine()`: build and update the dashed lines using the same math as the existing solid relationship lines.
+
+### Changed
+- `groupNodes()` now also records `parentId` on each class node, so a class's owning package can be looked up directly during drag.
+- `getTrimmedSvgClone()` now strips any `.pu-guide-line` elements from the exported clone, guaranteeing guide lines can never appear in an exported SVG or PNG.
+
+
 ## [1.2.0] - 2026-08-24
 
 ### Added
