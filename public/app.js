@@ -145,6 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Raw text response body returned by the server (which contains the raw SVG markup).
             const rawSvg = await response.text();
+
+            // Persist the newly rendered (pre-drag) diagram so a page refresh restores it.
+            try {
+                localStorage.setItem(STORAGE_KEYS.SVG, rawSvg);
+            } catch (err) {
+                console.warn('Could not save diagram to localStorage:', err);
+            }
             initDiagram(rawSvg);
 
         } catch (error) {
