@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-24
+
+### Added
+- PlantUML source in the textarea is now saved to `localStorage` as the user types, and survives a refresh.
+- The most recently rendered diagram (the server's raw SVG output, pre-drag) is saved to `localStorage` and automatically restored on page load. It's overwritten the next time you click **Render Diagram**.
+
+
 ## [1.1.0] - 2026-08-23
 
 ## Added
